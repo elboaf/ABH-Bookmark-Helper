@@ -567,10 +567,9 @@ ToolTip
 Return
 
 RefreshHotkeys:
-; Step 1: Disable ALL hotkeys in ALL contexts first
+; Step 1: First, disable ALL hotkeys (global ones too)
 Hotkey, IfWinActive
-
-; First, disable all hotkeys that might be registered (current ones)
+; Disable all hotkeys that might be registered
 For hk, lbl in HotkeyLabelMap
 {
     if (hk != "")
@@ -580,71 +579,7 @@ For hk, lbl in HotkeyLabelMap
 ; Step 2: Read all enabled windows
 IniRead, EnabledSection, %IniFile%, Enabled
 
-; Step 3: Create a list of all possible hotkey bindings (non-empty only)
-AllPossibleBindings := []
-if (KB_Copy != "")
-    AllPossibleBindings.Insert(KB_Copy)
-if (KB_Paste != "")
-    AllPossibleBindings.Insert(KB_Paste)
-if (KB_GrabSig != "")
-    AllPossibleBindings.Insert(KB_GrabSig)
-if (KB_SetRoot != "")
-    AllPossibleBindings.Insert(KB_SetRoot)
-if (KB_FormatEnf != "")
-    AllPossibleBindings.Insert(KB_FormatEnf)
-if (KB_FinH != "")
-    AllPossibleBindings.Insert(KB_FinH)
-if (KB_Fin13 != "")
-    AllPossibleBindings.Insert(KB_Fin13)
-if (KB_Fin1 != "")
-    AllPossibleBindings.Insert(KB_Fin1)
-if (KB_Fin2 != "")
-    AllPossibleBindings.Insert(KB_Fin2)
-if (KB_Fin3 != "")
-    AllPossibleBindings.Insert(KB_Fin3)
-if (KB_Fin4 != "")
-    AllPossibleBindings.Insert(KB_Fin4)
-if (KB_Fin5 != "")
-    AllPossibleBindings.Insert(KB_Fin5)
-if (KB_Fin6 != "")
-    AllPossibleBindings.Insert(KB_Fin6)
-if (KB_FinETag != "")
-    AllPossibleBindings.Insert(KB_FinETag)
-if (KB_FinSlash != "")
-    AllPossibleBindings.Insert(KB_FinSlash)
-if (KB_FinN != "")
-    AllPossibleBindings.Insert(KB_FinN)
-if (KB_FinL != "")
-    AllPossibleBindings.Insert(KB_FinL)
-if (KB_FinM != "")
-    AllPossibleBindings.Insert(KB_FinM)
-if (KB_FinS != "")
-    AllPossibleBindings.Insert(KB_FinS)
-if (KB_FinC != "")
-    AllPossibleBindings.Insert(KB_FinC)
-
-; Step 4: For each enabled window, clear all possible hotkeys
-Loop, Parse, EnabledSection, `n, `r
-{
-    Line := Trim(A_LoopField)
-    if (Line = "")
-        continue
-    EqPos := InStr(Line, "=")
-    if (!EqPos)
-        continue
-    WinTitle := Trim(SubStr(Line, 1, EqPos - 1))
-    
-    Hotkey, IfWinActive, %WinTitle%
-    
-    ; Disable all possible hotkey variations for this window
-    For index, binding in AllPossibleBindings
-    {
-        if (binding != "")
-            Hotkey, %binding%, Off, UseErrorLevel
-    }
-}
-
-; Step 5: Build the new label map (only non-empty bindings)
+; Step 3: Build the new label map (only non-empty bindings)
 HotkeyLabelMap := {}
 if (KB_Copy != "")
     HotkeyLabelMap[KB_Copy]      := "DoCopy"
@@ -687,13 +622,15 @@ if (KB_FinS != "")
 if (KB_FinC != "")
     HotkeyLabelMap[KB_FinC]      := "DoC"
 
-; Step 6: Register GLOBAL hotkeys (Copy & Paste) - no window restriction
+; Step 4: Register GLOBAL hotkeys (Copy & Paste) FIRST - no window restriction
+; Reset to global context
+Hotkey, IfWinActive
 if (KB_Copy != "")
     Hotkey, %KB_Copy%, DoCopy, On UseErrorLevel
 if (KB_Paste != "")
     Hotkey, %KB_Paste%, DoPaste, On UseErrorLevel
 
-; Step 7: Register window-specific hotkeys for enabled windows
+; Step 5: Register window-specific hotkeys for enabled windows (excluding copy/paste)
 Loop, Parse, EnabledSection, `n, `r
 {
     Line := Trim(A_LoopField)
@@ -707,7 +644,7 @@ Loop, Parse, EnabledSection, `n, `r
     
     if (Val = "1") {
         Hotkey, IfWinActive, %WinTitle%
-        ; Register all hotkeys EXCEPT copy and paste (which are global)
+        ; Register all hotkeys EXCEPT copy and paste (which are already global)
         if (KB_GrabSig != "")
             Hotkey, %KB_GrabSig%, DoQ, On UseErrorLevel
         if (KB_SetRoot != "")
@@ -747,7 +684,7 @@ Loop, Parse, EnabledSection, `n, `r
     }
 }
 
-; Step 8: Reset the hotkey context
+; Step 6: Reset the hotkey context
 Hotkey, IfWinActive
 Return
 
