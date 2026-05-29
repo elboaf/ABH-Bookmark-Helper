@@ -687,7 +687,13 @@ if (KB_FinS != "")
 if (KB_FinC != "")
     HotkeyLabelMap[KB_FinC]      := "DoC"
 
-; Step 6: Enable only the current hotkeys for enabled windows
+; Step 6: Register GLOBAL hotkeys (Copy & Paste) - no window restriction
+if (KB_Copy != "")
+    Hotkey, %KB_Copy%, DoCopy, On UseErrorLevel
+if (KB_Paste != "")
+    Hotkey, %KB_Paste%, DoPaste, On UseErrorLevel
+
+; Step 7: Register window-specific hotkeys for enabled windows
 Loop, Parse, EnabledSection, `n, `r
 {
     Line := Trim(A_LoopField)
@@ -701,15 +707,47 @@ Loop, Parse, EnabledSection, `n, `r
     
     if (Val = "1") {
         Hotkey, IfWinActive, %WinTitle%
-        For hk, lbl in HotkeyLabelMap
-        {
-            if (hk != "")
-                Hotkey, %hk%, %lbl%, On, UseErrorLevel
-        }
+        ; Register all hotkeys EXCEPT copy and paste (which are global)
+        if (KB_GrabSig != "")
+            Hotkey, %KB_GrabSig%, DoQ, On UseErrorLevel
+        if (KB_SetRoot != "")
+            Hotkey, %KB_SetRoot%, DoSemi, On UseErrorLevel
+        if (KB_FormatEnf != "")
+            Hotkey, %KB_FormatEnf%, DoE, On UseErrorLevel
+        if (KB_FinH != "")
+            Hotkey, %KB_FinH%, DoY, On UseErrorLevel
+        if (KB_Fin13 != "")
+            Hotkey, %KB_Fin13%, DoO, On UseErrorLevel
+        if (KB_Fin1 != "")
+            Hotkey, %KB_Fin1%, Do1, On UseErrorLevel
+        if (KB_Fin2 != "")
+            Hotkey, %KB_Fin2%, Do2, On UseErrorLevel
+        if (KB_Fin3 != "")
+            Hotkey, %KB_Fin3%, Do3, On UseErrorLevel
+        if (KB_Fin4 != "")
+            Hotkey, %KB_Fin4%, Do4, On UseErrorLevel
+        if (KB_Fin5 != "")
+            Hotkey, %KB_Fin5%, Do5, On UseErrorLevel
+        if (KB_Fin6 != "")
+            Hotkey, %KB_Fin6%, Do6, On UseErrorLevel
+        if (KB_FinETag != "")
+            Hotkey, %KB_FinETag%, DoQuote, On UseErrorLevel
+        if (KB_FinSlash != "")
+            Hotkey, %KB_FinSlash%, DoComma, On UseErrorLevel
+        if (KB_FinN != "")
+            Hotkey, %KB_FinN%, DoDot, On UseErrorLevel
+        if (KB_FinL != "")
+            Hotkey, %KB_FinL%, DoP, On UseErrorLevel
+        if (KB_FinM != "")
+            Hotkey, %KB_FinM%, DoM, On UseErrorLevel
+        if (KB_FinS != "")
+            Hotkey, %KB_FinS%, DoS, On UseErrorLevel
+        if (KB_FinC != "")
+            Hotkey, %KB_FinC%, DoC, On UseErrorLevel
     }
 }
 
-; Step 7: Reset the hotkey context
+; Step 8: Reset the hotkey context
 Hotkey, IfWinActive
 Return
 
